@@ -1,0 +1,43 @@
+.home-buttom-banner{
+    background-image: url(https://images.unsplash.com/photo-1566305977571-5666677c6e98?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8ODd8fGNlcmFtaWNzfGVufDB8fDB8fHww);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center center;
+    object-fit: cover;
+    height: 400px;
+    filter: drop-shadow(0 -3mm 2mm #d1d1d1);
+    h3{
+        padding-top: 10%;
+    }
+}
+
+.bg-color{
+    background-color: #c9c9c9;
+}
+
+.home-feature-products{
+    padding-top: 30px;
+    margin-bottom: 30px;
+}
+
+
+
+@include pad{
+    .home-top-banner{
+        flex-direction: column-reverse;
+        position: relative;
+        top: 0; left: 0;
+        img{
+            padding: 0px;
+        }
+        h1{
+            position:absolute;
+            top: 25%; left: 10%;
+            color: white;
+            font-size: 22px;
+        }
+    }
+    .home-buttom-banner{
+        height: 150px;
+    }
+}
