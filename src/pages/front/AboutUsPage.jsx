@@ -1,5 +1,5 @@
 import Iframe from 'react-iframe'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef} from 'react'
 import Loading from '../../components/Loading';
 import Swiper from "swiper";
 import { Autoplay } from "swiper/modules";
@@ -7,10 +7,6 @@ import "swiper/css";
 
 const AboutUsPage = () => {
     const  swiperRef = useRef(null);
-
-    //全螢幕的loading
-    const [screenLoading, setScreenLoading] = useState(false);
-
     useEffect(() => {
         new Swiper(swiperRef.current, {
             scrollbar: {
@@ -111,7 +107,6 @@ const AboutUsPage = () => {
             </li>
         </ul>
     </div>
-    {screenLoading && ( <Loading />)}
     </>
   )
 }

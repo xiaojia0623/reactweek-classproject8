@@ -8,7 +8,7 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
 
 
-const AdminTestBlogModal = ({modalBlogsMode, tempBlogs, isOpen, setIsOpen, getBlogs}) => {
+const AdminTestBlogModal = ({modalBlogsMode, tempBlogs, isOpen, setIsOpen, getBlogs, setIsBlogsModalOpen}) => {
     const blogsModalRef = useRef(null); //使用useRef取得DOM數(預設值null，綁定在DOM)
     const fileInputRef = useRef(null); // 給 input type="file" 的 ref
     const [modalBlogsData, setModalBlogsData] = useState(tempBlogs) //tempProduct這邊作為初始值
@@ -66,6 +66,27 @@ const AdminTestBlogModal = ({modalBlogsMode, tempBlogs, isOpen, setIsOpen, getBl
         }
     }
 
+    //多圖區新增按鈕
+    const handleAddImage = () => {
+        const newImages = [...modalBlogsData.imagesUrl, ''];
+
+        setModalBlogsData({
+        ...modalBlogsData,
+        imagesUrl: newImages
+        })
+    }
+    //多圖區刪除按鈕
+    const handleRemoveImage = () => {
+        const newImages = [...modalBlogsData.imagesUrl];
+
+        newImages.pop()
+
+        setModalBlogsData({
+        ...modalBlogsData,
+        imagesUrl: newImages
+        })
+    }
+
     //判斷第幾個index新增圖片，監聽input內change事件
     const handleImageChange = (e, index) => {
         const {value} = e.target;
@@ -93,17 +114,23 @@ const AdminTestBlogModal = ({modalBlogsMode, tempBlogs, isOpen, setIsOpen, getBl
             })
             dispatch(pushMessage({
                 title: "系統提示",
-                text: "恭喜! 新增優惠券成功",
+                text: "恭喜! 新增文章成功",
                 status: "success"
             }))
             handleCloseBlogsModal();
         }catch (error) {
+            // 檢查 API 是否有回傳詳細錯誤訊息
+            const errorMessage = error.response?.data?.message || "請檢查輸入資料";
+
             dispatch(pushMessage({
                 title: "系統提示",
-                text: "新增產品失敗，請檢查輸入資料",
+                text: `新增文章失敗：${errorMessage}`,
                 status: "failed"
             }))
-            setIsBlogsModalOpen(true);
+
+            if (error.response?.status === 400) {
+                setIsBlogsModalOpen(true);
+            }
         }
     }
 
@@ -137,9 +164,10 @@ const AdminTestBlogModal = ({modalBlogsMode, tempBlogs, isOpen, setIsOpen, getBl
             }))
             handleCloseBlogsModal();
         }catch (error) {
+            const errorMessage = error.response?.data?.message || "請檢查輸入資料";
             dispatch(pushMessage({
                 title: "系統提示",
-                text: "編輯優惠券失敗",
+                text: `編輯優惠券失敗：${errorMessage}`,
                 status: "failed"
             }))
         }
@@ -196,13 +224,15 @@ const AdminTestBlogModal = ({modalBlogsMode, tempBlogs, isOpen, setIsOpen, getBl
 
             dispatch(pushMessage({
                 title: "系統提示",
-                text: "更新優惠券券成功",
+                text: "更新文章成功",
                 status: "success"
             }))
         }catch (error) {
+            const errorMessage = error.response?.data?.message || "請檢查輸入資料";
+
             dispatch(pushMessage({
                 title: "系統提示",
-                text: "更新優惠券失敗",
+                text: `更新文章失敗：${errorMessage}`,
                 status: "failed"
             }))
         }

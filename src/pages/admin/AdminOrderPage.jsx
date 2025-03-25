@@ -39,22 +39,33 @@ const AdminOrderPage = () => {
     //刪除單筆或全部訂單的 modal狀態
     const [deleteOrderModalState, setDeleteOrderModalState] = useState(null);
 
-    
-    //取得前台訂單資料
-    const getOrders = async (page=1) => {
-        try{ //串接產品api
-        const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/admin/orders?page=${page}`);
-            setOrders(res.data.orders);
-            setPageData(res.data.pagination);
-        }catch(error) {
-            alert('產品取得失敗!!')
-        }
-    }
+
+    const formatDueDate = (dueDate) => {
+        if (!dueDate) return "";
+        // 假設 dueDate 是 Unix timestamp，將其轉換為當地的日期時間格式
+        const date = new Date(dueDate * 1000);
+        return date.toLocaleString(); // 格式化為本地日期時間
+    };
 
     useEffect(() => {
         getOrders();
     }, [])
 
+    
+    //取得前台訂單資料
+    const getOrders = async (page=1) => {
+        try{ //串接產品api
+            const token = document.cookie.replace(/(?:(?:^|.*;\s*)jiahu0724428\s*=\s*([^;]*).*$)|^.*$/,"$1",);
+            axios.defaults.headers.common.Authorization = token;
+            const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/admin/orders?page=${page}`);
+                setOrders(res.data.orders);
+                setPageData(res.data.pagination);
+        }catch(error) {
+            alert('訂單取得失敗!!', error)
+        }
+    }
+
+    
     //打開訂單Modal
     const handleOpenOrdersModal = (mode, order) => {
         setModalOrdersMode(mode);
@@ -91,6 +102,8 @@ const AdminOrderPage = () => {
         getOrders(page)
     }
 
+    
+
 
   return (
     <div>
@@ -119,7 +132,7 @@ const AdminOrderPage = () => {
                             <tr key={order.id}>
                                 <th scope="row">{order.num}</th>
                                 <td>{order.user.name}</td>
-                                <td>{formatDueDate(blog.create_at)}</td>
+                                <td>{formatDueDate(order.create_at)}</td>
                                 <td>{order.iis_paid ? (<span className="text-success">已付款</span>) : <span className="text-danger">未付款</span>}</td>
                                 <td>{order.total.toLocaleString()}</td>
                                 <td>
@@ -135,7 +148,7 @@ const AdminOrderPage = () => {
                     </table>
                 </div>
             </div>
-            <Pagination getOrders={getOrders} pageData={pageData} />
+            <Pagination getOrders={getOrders} pageData={pageData} handlePageChange={handlePageChange}/>
         </div>
         <AdminOrderModal getOrders={getOrders} tempOrders={tempOrders} modalOrdersMode={modalOrdersMode} isOrdersOpen={isOrdersModalOpen} setIsOrdersOpen={setIsOrdersModalOpen}/>
         

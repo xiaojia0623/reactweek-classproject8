@@ -1,4 +1,4 @@
-import { useEffect, useState} from 'react'
+import { useEffect, useState, useCallback} from 'react'
 import axios from 'axios'
 import { useDispatch } from 'react-redux'
 import { pushMessage } from '../../redux/toastSlice'
@@ -55,7 +55,7 @@ const AdminBlogPage = () => {
   }
 
   //取得後台部落格資料
-  const getBlogs = async (page=1) => {
+  const getBlogs = useCallback(async (page=1) => {
     try{ //串接部落格api
         const token = document.cookie.replace(/(?:(?:^|.*;\s*)jiahu0724428\s*=\s*([^;]*).*$)|^.*$/,"$1",);
         axios.defaults.headers.common.Authorization = token;
@@ -70,17 +70,20 @@ const AdminBlogPage = () => {
             status: "success"
          }))
     }catch(error) {
+      const errorMessage = error.response?.data?.message || "請檢查輸入資料";
+
+
         dispatch(pushMessage({
             title: "系統提示",
-            text: "文章取得失敗",
+            text: `文章取得失敗：${errorMessage}`,
             status: "failed"
         }))
     }
-  }
+  },[dispatch]);
 
   useEffect(() => {
     getBlogs();  // 載入當前頁面資料
-  }, []) 
+  }, [getBlogs]) 
 
   //打開部落格Modal
   const handleOpenBlogsModal = (mode, blog) => {

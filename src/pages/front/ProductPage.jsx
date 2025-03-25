@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { useDispatch } from 'react-redux'
@@ -12,16 +12,14 @@ const API_PATH = import.meta.env.VITE_API_PATH;
 
 const ProductPage = () => {
   const [products, setProducts] = useState([]);
-  const [qtySelect, setQtySelect] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
+  const [qtySelect] = useState(1);
   const dispatch = useDispatch();
   const [selectCategory, setSelectCategory] = useState('全部');
-  const [loadingProductId, setLoadingProductId] = useState(null); 
 
   //全螢幕的loading
   const [screenLoading, setScreenLoading] = useState(false);
 
-  const getAllProducts = async (page=1) => {
+  const getAllProducts = useCallback(async (page=1) => {
     setScreenLoading(true)
     try {
       const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/products?page=${page}`);
@@ -29,20 +27,20 @@ const ProductPage = () => {
       setPageData(res.data.pagination);
       
     } catch (error) {
-      alert("取得產品失敗");
+      const errorMessage = error.response?.data?.message || "請檢查輸入資料";
+      dispatch(pushMessage({ title: "錯誤", text: `取得產品失敗：${errorMessage}`, status: "failed" }));
     } finally{
       setScreenLoading(false)
     }
-  };
+  },[dispatch]);
 
   useEffect(() => {
     getAllProducts();
-  }, []);
+  }, [getAllProducts]);
 
 
   const addCartItem = async (product_id, qty, title) => {
     setScreenLoading(true)
-    setLoadingProductId(product_id); // 記錄目前正在加入購物車的產品 ID
     try{
       await axios.post(`${BASE_URL}/v2/api/${API_PATH}/cart`,{
         data:{
@@ -55,28 +53,16 @@ const ProductPage = () => {
         text: `已加入 ${title} 到購物車`,
         status: "success"
       }))
-      // dispatch(pushMessage({
-      //   title: "系統提示",
-      //   text: `已加入 ${title} 到購物車`,
-      //   status: "success"
-      // }))
-      //alert('加入購物車成功')
     }catch (error){
-      //alert('加入購物車失敗')
+      const errorMessage = error.response?.data?.message || "請檢查輸入資料";
       dispatch(updateCartData({
         title: "系統提示",
-        text: "加入購物車失敗",
+        text: `加入購物車失敗：${errorMessage}`,
         status: "failed"
       }));
-      // dispatch(pushMessage({
-      //   title: "系統提示",
-      //   text: "加入購物車失敗",
-      //   status: "failed"
-      // }));
 
     }finally{
       setScreenLoading(false)
-      setLoadingProductId(null); // 加入完成後，重置 loading 狀態
     }
   }
   const categories =['全部', ...new Set(products.map((product) => product.category))];

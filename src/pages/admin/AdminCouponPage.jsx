@@ -1,4 +1,4 @@
-import { useEffect, useState} from 'react'
+import { useEffect, useState , useCallback} from 'react'
 import axios from 'axios'
 import { useDispatch } from 'react-redux'
 import { pushMessage } from '../../redux/toastSlice'
@@ -52,8 +52,7 @@ const AdminCouponPage = () => {
     const [isDelCouponsModalOpen, setIsDelCouponsModalOpen] = useState(false)
 
   
-    //取得後台優惠券資料
-    const getCoupons = async (page=1) => {
+    const getCoupons = useCallback(async (page=1) => {
         const token = document.cookie.replace(/(?:(?:^|.*;\s*)jiahu0724428\s*=\s*([^;]*).*$)|^.*$/,"$1",);
         axios.defaults.headers.common.Authorization = token;
         try{ //串接產品api
@@ -64,19 +63,22 @@ const AdminCouponPage = () => {
                 title: "系統提示",
                 text: "恭喜! 成功取得優惠券",
                 status: "success"
-             }))
-        }catch(error) {
-            dispatch(pushMessage({
-                title: "系統提示",
-                text: "優惠券取得失敗",
-                status: "failed"
             }))
-        }
-    }
+        }catch(error) {
+            const errorMessage = error.response?.data?.message || "請檢查輸入資料";
+              dispatch(pushMessage({
+                  title: "系統提示",
+                  text: `優惠券取得失敗：${errorMessage}`,
+                  status: "failed"
+              }))
+          }
+      }, [dispatch]);
 
+    //取得後台優惠券資料
     useEffect(() => {
-        getCoupons();
-    }, [])
+      getCoupons();
+    }, [getCoupons]);
+    
 
     //打開優惠券Modal
     const handleOpenCouponsModal = (mode, coupons) => {

@@ -36,9 +36,10 @@ const DeleteCouponModal = ({tempCoupons,getCoupons, isOpen, setIsOpen}) => {
             
         }catch (error) {
             alert('刪除優惠券失敗');
+            const errorMessage = error.response?.data?.message || "請檢查輸入資料";
             dispatch(pushMessage({
                 title: "系統提示",
-                text: "刪除優惠券失敗",
+                text: `刪除優惠券失敗：${errorMessage}`,
                 status: "failed"
             }))
         }
@@ -53,7 +54,8 @@ const DeleteCouponModal = ({tempCoupons,getCoupons, isOpen, setIsOpen}) => {
 
             handleCloseDelCouponModal();
         }catch (error) {
-            alert('刪除產品失敗')
+            const errorMessage = error.response?.data?.message || "請檢查輸入資料";
+            dispatch(pushMessage({ title: "錯誤", text: `刪除產品失敗：${errorMessage}`, status: "failed" }));
         }
     }
 

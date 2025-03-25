@@ -1,9 +1,10 @@
-import { useEffect, useState} from 'react'
+import { useEffect, useState, useCallback} from 'react'
 import axios from 'axios'
-//import { useNavigate } from "react-router-dom"
 import Pagination from '../../components/Pagination'
 import AdminProductModal from '../../components/AdminProductModal';
 import DeleteProductModal from '../../components/DeleteProductModal';
+import { useDispatch } from 'react-redux';
+import { pushMessage } from '../../redux/toastSlice';
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
@@ -36,22 +37,23 @@ const AdminProducts = () => {
 
   //判斷確認刪除Modal是開還是關，預設為關閉狀態
   const [isDelProductModalOpen, setIsDelProductModalOpen] = useState(false)
-
+  const dispatch = useDispatch();
   
   //取得後台產品資料
-  const getProducts = async (page=1) => {
+  const getProducts = useCallback(async (page=1) => {
     try{ //串接產品api
       const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/admin/products?page=${page}`);
         setProducts(res.data.products);
         setPageData(res.data.pagination);
     }catch(error) {
-        alert('產品取得失敗!!')
+      const errorMessage = error.response?.data?.message || "請檢查輸入資料";
+        dispatch(pushMessage({ title: "錯誤", text: `產品取得失敗：${errorMessage}`, status: "failed" }));
     }
-  }
+  }, [dispatch])
 
   useEffect(() => {
     getProducts();
-  }, [])
+  }, [getProducts])
 
   //打開產品Modal
   const handleOpenProductModal = (mode, product) => {

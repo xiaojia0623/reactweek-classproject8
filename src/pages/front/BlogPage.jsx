@@ -13,9 +13,6 @@ const BlogPage = () => {
     const [frontBlogs, setFrontBlogs] = useState([]);
     const [blogTags, setBlogTags] = useState('全部')
 
-    //全螢幕的loading
-    const [screenLoading, setScreenLoading] = useState(false);
-    const tags =['全部', ...new Set(frontBlogs.map((blog) => blog.tag))];
     const filteredAllTags = frontBlogs.filter((blog) => {
         if (blogTags === '全部') return blog;
 
@@ -23,7 +20,6 @@ const BlogPage = () => {
     })
 
     const getAllBlogs = async () => {
-        setScreenLoading(true)
         try {
             const token = document.cookie.replace(/(?:(?:^|.*;\s*)jiahu0724428\s*=\s*([^;]*).*$)|^.*$/, "$1");
             //console.log("目前的 token:", token);
@@ -92,7 +88,7 @@ const BlogPage = () => {
                 <ul className='list-unstyled d-flex flex-wrap'>
                     {frontBlogs.map((tagsItem) => (
                         <li key={tagsItem.id} className="mx-2 my-1">
-                            <Link><span className="badge p-2 rounded-pill text-bg-primary">{tagsItem.tag}</span></Link>
+                            <Link onClick={() => setBlogTags(tagsItem.tag)}><span className="badge p-2 rounded-pill text-bg-primary">{tagsItem.tag}</span></Link>
                         </li>
                     ))}
                 </ul>

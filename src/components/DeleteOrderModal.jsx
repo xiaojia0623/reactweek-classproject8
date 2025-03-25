@@ -36,9 +36,10 @@ const TestAdminDeleteOrderModal = ({tempOrders,getOrders, isOrdersOpen, setIsOrd
                 status: "success"
             }))
         }catch (error) {
+            const errorMessage = error.response?.data?.message || "請檢查輸入資料";
             dispatch(pushMessage({
                 title: "系統提示",
-                text: "刪除訂單失敗",
+                text: `刪除訂單失敗：${errorMessage}`,
                 status: "failed"
             }))
         }
@@ -57,9 +58,10 @@ const TestAdminDeleteOrderModal = ({tempOrders,getOrders, isOrdersOpen, setIsOrd
                 status: "success"
             }))
         }catch(error) {
+            const errorMessage = error.response?.data?.message || "請檢查輸入資料";
             dispatch(pushMessage({
                 title: "系統提示",
-                text: "所有訂單已刪除失敗",
+                text: `所有訂單刪除失敗：${errorMessage}`,
                 status: "failed"
             }))
         }
@@ -72,10 +74,11 @@ const TestAdminDeleteOrderModal = ({tempOrders,getOrders, isOrdersOpen, setIsOrd
             await apiCall();
             getOrders(pageData.current_page);
         }catch (error) {
+            const errorMessage = error.response?.data?.message || "請檢查輸入資料";
             alert('刪除產品失敗')
             dispatch(pushMessage({
                 title: "系統提示",
-                text: "刪除訂單失敗",
+                text: `刪除訂單失敗：${errorMessage}`,
                 status: "failed"
             }))
         }

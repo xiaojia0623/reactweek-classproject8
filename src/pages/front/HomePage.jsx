@@ -5,6 +5,8 @@ import { Autoplay } from "swiper/modules";
 import "swiper/css";
 import Loading from '../../components/Loading';
 import { Link } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { pushMessage } from '../../redux/toastSlice';
 import AOS from 'aos';
 import 'aos/dist/aos.css'; 
 
@@ -43,6 +45,7 @@ const HomePage = () => {
 
     //全螢幕的loading
     const [screenLoading, setScreenLoading] = useState(false);
+    const dispatch = useDispatch();
 
     useEffect(() => {
         const getProducts = async () => {
@@ -51,13 +54,14 @@ const HomePage = () => {
             const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/products`);
             setHomeProducts(res.data.products);
           } catch (error) {
-            alert("取得產品失敗");
+            const errorMessage = error.response?.data?.message || "請檢查輸入資料";
+            dispatch(pushMessage({ title: "錯誤", text: `取得產品失敗：${errorMessage}`, status: "failed" }));
           } finally{
             setScreenLoading(false)
           }
         };
         getProducts();
-    }, []);
+    }, [dispatch]);
 
     useEffect(() => {
         new Swiper(swiperRef.current, {

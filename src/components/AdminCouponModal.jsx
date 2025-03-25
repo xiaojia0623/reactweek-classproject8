@@ -17,7 +17,7 @@ const generateRandomCode = () => {
 };
 
 
-const AdminCouponModal = ({modalCouponMode, tempCoupons, isOpen, setIsOpen, getCoupons}) => {
+const AdminCouponModal = ({modalCouponMode, tempCoupons, isOpen, setIsOpen, getCoupons, setIsCouponsModalOpen}) => {
     const couponModalRef = useRef(null); //使用useRef取得DOM數(預設值null，綁定在DOM)
     const fileInputRef = useRef(null); // 給 input type="file" 的 ref
     const [modalCouponData, setModalCouponData] = useState(tempCoupons) //tempProduct這邊作為初始值
@@ -83,9 +83,10 @@ const AdminCouponModal = ({modalCouponMode, tempCoupons, isOpen, setIsOpen, getC
             }))
             handleCloseCouponModal();
         }catch (error) {
+            const errorMessage = error.response?.data?.message || "請檢查輸入資料";
             dispatch(pushMessage({
                 title: "系統提示",
-                text: "新增產品失敗，請檢查輸入資料",
+                text: `新增優惠券失敗：${errorMessage}`,
                 status: "failed"
             }))
             setIsCouponsModalOpen(true);
@@ -162,9 +163,10 @@ const AdminCouponModal = ({modalCouponMode, tempCoupons, isOpen, setIsOpen, getC
                 status: "success"
             }))
         }catch (error) {
+            const errorMessage = error.response?.data?.message || "請檢查輸入資料";
             dispatch(pushMessage({
                 title: "系統提示",
-                text: "更新優惠券失敗",
+                text: `更新優惠券失敗：${errorMessage}`,
                 status: "failed"
             }))
         }

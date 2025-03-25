@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
+import { pushMessage } from '../../redux/toastSlice';
 import { Link } from 'react-router-dom'
 import { NavLink } from 'react-router-dom';
 import { updateCartData } from '../../redux/cartSlice';
@@ -23,18 +24,19 @@ const Header = () => {
 
     const dispatch = useDispatch();
 
-    const getCart = async() => {
-        try{
-            const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/cart`);
-            dispatch(updateCartData(res.data.data));
-        }catch(error){
-            alert('取得購物車失敗')
-        }
-    }
-
     useEffect(() => {
+        const getCart = async() => {
+            try{
+                const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/cart`);
+                dispatch(updateCartData(res.data.data));
+            }catch(error){
+                const errorMessage = error.response?.data?.message || "請檢查輸入資料";
+                dispatch(pushMessage({ title: "錯誤", text: `取得購物車失敗：${errorMessage}`, status: "failed" }));
+            }
+        }
+
         getCart();
-    }, [])
+    }, [dispatch])
 
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm position-sticky top-0 shadow z-3">

@@ -36,9 +36,10 @@ const DeleteBlogsModal = ({tempBlogs,getBlogs, isOpen, setIsOpen}) => {
             
         }catch (error) {
             alert('刪除文章失敗');
+            const errorMessage = error.response?.data?.message || "請檢查輸入資料";
             dispatch(pushMessage({
                 title: "系統提示",
-                text: "刪除文章失敗",
+                text: `刪除文章失敗：${errorMessage}`,
                 status: "failed"
             }))
         }
@@ -53,7 +54,12 @@ const DeleteBlogsModal = ({tempBlogs,getBlogs, isOpen, setIsOpen}) => {
 
             handleCloseDelBlogsModal();
         }catch (error) {
-            alert('刪除產品失敗')
+            const errorMessage = error.response?.data?.message || "請檢查輸入資料";
+            dispatch(pushMessage({
+                title: "系統提示",
+                text: `刪除產品失敗：${errorMessage}`,
+                status: "failed"
+            }))
         }
     }
 

@@ -23,7 +23,7 @@ export default function Toast() {
                 }, TOAST_DURATION);
             }
         });
-    }, [messages]);
+    }, [messages, dispatch]);
 
     const handleDismiss = (message_id) => {
         dispatch(removeMessage(message_id));

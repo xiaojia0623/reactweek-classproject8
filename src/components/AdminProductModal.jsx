@@ -7,7 +7,7 @@ import { Modal } from 'bootstrap'
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
 
-const AdminProductModal = ({modalMode, tempProduct, isOpen, setIsOpen, getProducts}) => {
+const AdminProductModal = ({modalMode, tempProduct, isOpen, setIsOpen, getProducts, setIsProductModalOpen}) => {
 
     const productModalRef = useRef(null); //使用useRef取得DOM數(預設值null，綁定在DOM)
     const fileInputRef = useRef(null); // 給 input type="file" 的 ref
@@ -55,10 +55,11 @@ const AdminProductModal = ({modalMode, tempProduct, isOpen, setIsOpen, getProduc
 
             handleCloseProductModal();
         }catch (error) {
-            //alert('新增產品失敗，請檢查輸入資料');
+            const errorMessage = error.response?.data?.message || "請檢查輸入資料";
+
             dispatch(pushMessage({
                 title: "系統提示",
-                text: "新增產品失敗，請檢查輸入資料",
+                text: `新增產品失敗，請檢查輸入資料：${errorMessage}`,
                 status: "failed"
             }))
             
@@ -145,9 +146,11 @@ const AdminProductModal = ({modalMode, tempProduct, isOpen, setIsOpen, getProduc
             }))
             
         }catch (error) {
+            const errorMessage = error.response?.data?.message || "請檢查輸入資料";
+
             dispatch(pushMessage({
                 title: "系統提示",
-                text: "編輯產品失敗",
+                text: `編輯產品失敗：${errorMessage}`,
                 status: "failed"
             }))
         }
@@ -174,7 +177,8 @@ const AdminProductModal = ({modalMode, tempProduct, isOpen, setIsOpen, getProduc
             getProducts();
             handleCloseProductModal();
         }catch (error) {
-            alert('更新產品失敗')
+            const errorMessage = error.response?.data?.message || "請檢查輸入資料";
+            dispatch(pushMessage({ title: "錯誤", text: `更新產品失敗：${errorMessage}`, status: "failed" }));
         }
     }
 

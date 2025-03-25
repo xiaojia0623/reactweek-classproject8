@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { useDispatch } from 'react-redux'
 import { updateCartData } from '../../redux/cartSlice';
 import { pushMessage } from '../../redux/toastSlice';
+import Loading from '../../components/Loading';
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
@@ -15,22 +16,22 @@ const ProductDetailPage = () => {
     const [qtySelect, setQtySelect] = useState(1);
     const dispatch = useDispatch();
     const {id: product_id} = useParams();
-    const [isLoading, setIsLoading] = useState(false)
     const [screenLoading, setScreenLoading] = useState(false);
-    const [loadingProductId, setLoadingProductId] = useState(null); // 追蹤加入中狀態
 
-    const getCart = async () => {
+    const getCart = useCallback(async () => {
         try{
           const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/cart`);
           dispatch(updateCartData(res.data.data))
         }catch(error){
-          alert('取得購物車失敗')
+          alert('取得購物車失敗', error)
         }
-    }
+        
+        
+    }, [dispatch]);
     
     useEffect(() => {
           getCart();
-    }, []);
+    }, [getCart]);
     
 
     useEffect(() => {
@@ -40,17 +41,17 @@ const ProductDetailPage = () => {
                 const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/product/${product_id}`);
                 setProduct(res.data.product);
             } catch(error){
-                alert('取得產品失敗')
+                alert('取得產品失敗', error)
             }finally{
                 setScreenLoading(false)
             }
         }
         getProduct();
-    }, [])
+    },[product_id])
+
+
 
     const addCartItem = async(product_id, qty) => {
-        setIsLoading(true)
-        setLoadingProductId(product_id); // 記錄目前正在加入購物車的產品 ID
         try{
             await axios.post(`${BASE_URL}/v2/api/${API_PATH}/cart`,{
                 data:{
@@ -65,16 +66,15 @@ const ProductDetailPage = () => {
             }))
             getCart();
         }catch(error){
+            const errorMessage = error.response?.data?.message || "請檢查輸入資料";
             dispatch(pushMessage({
                 title: "系統提示",
-                text: "加入購物車失敗",
+                text: `加入購物車失敗：${errorMessage}`,
                 status: "failed"
             }))
-        }finally{
-            setIsLoading(false)
-            setLoadingProductId(null); // 加入完成後，重置 loading 狀態
         }
-    }
+    }  
+    
 
 
 
@@ -167,6 +167,7 @@ const ProductDetailPage = () => {
             {product.content === "無" ?  product.content : ''}
             </p>
         </div>
+        {screenLoading && (<Loading />)}
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import React,{ useEffect, useState } from 'react'
+import React,{ useCallback, useEffect, useState } from 'react'
 import { useNavigate, Link  } from "react-router-dom"; // 引入 useNavigate
 import { useDispatch } from 'react-redux';
 import { pushMessage } from '../../redux/toastSlice';
@@ -18,18 +18,18 @@ const taiwanRegions = {
   
 const paymentOptions = ["現金", "信用卡", "LinePay", "ApplePay"];
 
-const TestCheckoutForm = () => {
+const CheckoutForm = () => {
     const {
         register,
         handleSubmit,
         watch,
         setValue,
         clearErrors,
+        reset,
         formState: { errors },
     } = useForm();
 
     const [cartItem, setCartItem] = useState({});
-    const [orderFormData, setOrderFormData] = useState(null);
 
     const navigate = useNavigate(); // 初始化 useNavigate
     const dispatch = useDispatch();
@@ -39,56 +39,45 @@ const TestCheckoutForm = () => {
     const selectedPayment = watch("paymentMethod");
 
     //取得購物車清單
-    const getCartList = async() => {
+    const getCartList = useCallback(async() => {
         try{
             const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/cart`);
             setCartItem(res.data.data);
         }catch(error) {
-            alert('取得失敗')
+            const errorMessage = error.response?.data?.message || "請檢查輸入資料";
+            dispatch(pushMessage({ title: "錯誤", text: `取得失敗：${errorMessage}`, status: "failed" }));
         }
-    }
+    },[dispatch])
 
     useEffect(() => {
         getCartList();
-    },[])
-
-
-
-    const onSubmit = (data) => {
-        setOrderFormData(data);  // 儲存資料
-        // 儲存資料到 sessionStorage，避免在頁面重新加載時丟失
-        sessionStorage.setItem("orderFormData", JSON.stringify(data));
-
-        console.log("提交的資料:", data);
-
-        // 導向到結帳頁面
-        navigate("/checkout-payment");
-    };
+    }, [getCartList])
 
 
     //結帳
     const checkout = async(data) => {
-        setScreenLoading(true)
         try{
-          await axios.post(`${BASE_URL}/v2/api/${API_PATH}/order`, data)
-          setCart({})
+            await axios.post(`${BASE_URL}/v2/api/${API_PATH}/order`, data)
+            setCartItem({})
 
-          dispatch(pushMessage({
-            title: "提示",
-            text: "訂單送出成功",
-            status: "success"
-          }))
-          reset()
+            dispatch(pushMessage({
+                title: "提示",
+                text: "表單完成",
+                status: "success"
+            }))
+            localStorage.setItem("orderFormData", JSON.stringify(data));
+            reset()
+
+            // 導向到結帳頁面
+            navigate("/checkout-payment");
         }catch (error){
-          //alert('結帳失敗')
-          dispatch(pushMessage({
-            title: "提示",
-            text: "訂單送出失敗",
-            status: "failed"
-          }))
-
-        }finally{
-          setScreenLoading(false)
+            const errorMessage = error.response?.data?.message || "請檢查輸入資料";
+            dispatch(pushMessage({
+                title: "提示",
+                text: `訂單送出失敗：${errorMessage}`,
+                status: "failed"
+            }))
+            console.log('錯誤: ', error);
         }
     }
 
@@ -125,7 +114,7 @@ const TestCheckoutForm = () => {
         <div className="row row-cols-1 row-cols-md-2 align-items-start mb-5">
             <div className="col col-md-6">
                 <h2 className='fw-bold m-0'>填寫訂購相關資料</h2>
-                <form onSubmit={handleSubmit(onSubmit)} className="max-w-md mx-auto p-2 ">
+                <form onSubmit={handleSubmit(checkout)} className="max-w-md mx-auto p-2 ">
                     {/* 個人資訊 */}
                     <div className='mb-3'>
                         <label htmlFor='name' className="block mb-2 fw-bold">訂購人姓名 : </label>
@@ -302,4 +291,4 @@ const TestCheckoutForm = () => {
   )
 }
 
-export default TestCheckoutForm
+export default CheckoutForm

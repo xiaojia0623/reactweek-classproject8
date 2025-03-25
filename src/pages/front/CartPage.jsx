@@ -1,11 +1,12 @@
-import { useEffect, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useRef, useState, useCallback } from 'react'
+import { Link } from 'react-router-dom';
 import Swiper from "swiper";
 import { Autoplay } from "swiper/modules";
 import "swiper/css";
 import axios from 'axios';
 import { useDispatch } from 'react-redux'
 import { updateCartData } from '../../redux/cartSlice';
+import { pushMessage } from '../../redux/toastSlice';
 import Loading from '../../components/Loading';
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -14,15 +15,10 @@ const API_PATH = import.meta.env.VITE_API_PATH;
 const CartPage = () => {
     const [cart, setCart] = useState({});
     const [product, setProduct] = useState([])
-
-    // 優惠券狀態
-    const [couponCode, setCouponCode] = useState(""); // 優惠券輸入框
-    const [percent, setPercent] = useState(); // 優惠折扣（例如 10%）
-
     const dispatch = useDispatch();
     const  swiperRef = useRef(null);
 
-    const navigate = useNavigate();
+    
 
     //全螢幕的loading
     const [screenLoading, setScreenLoading] = useState(false);
@@ -30,15 +26,15 @@ const CartPage = () => {
     //取得後台優惠券折扣%與序號
     
 
-    const getCart = async() => {
+    const getCart = useCallback(async () => {
         try{
             const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/cart`)
             setCart(res.data.data);
             dispatch(updateCartData(res.data.data));
         }catch(error){
-            alert('取購物車失敗')
+            alert('取購物車失敗', error)
         }
-    }
+    },[dispatch])
 
     useEffect(() => {
         getCart();
@@ -67,7 +63,7 @@ const CartPage = () => {
               },
             },
         });
-    },[])
+    },[getCart])
 
     useEffect(() => {
         const getProducts = async () => {
@@ -75,11 +71,16 @@ const CartPage = () => {
             const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/products`);
             setProduct(res.data.products);
           } catch (error) {
-            alert("取得產品失敗");
+            const errorMessage = error.response?.data?.message || "請檢查輸入資料";
+            dispatch(pushMessage({
+                title: "提示",
+                text: `取得產品失敗：${errorMessage}`,
+                status: "failed"
+            }))
           }
         };
         getProducts();
-    }, []);
+    }, [dispatch]);
 
     //購物車內的"X"
     const removeCartItem = async(cartItem_id) => {
@@ -87,8 +88,8 @@ const CartPage = () => {
         try{
             await axios.delete(`${BASE_URL}/v2/api/${API_PATH}/cart/${cartItem_id}`);
             getCart();
-        }catch(errror){
-            alert('刪除失敗')
+        }catch(error){
+            alert('刪除失敗', error)
         }finally{
             setScreenLoading(false)
         }
@@ -101,7 +102,7 @@ const CartPage = () => {
           await axios.delete(`${BASE_URL}/v2/api/${API_PATH}/carts`)
           getCart();
         }catch (error){
-          alert('清除購物車失敗')
+          alert('清除購物車失敗', error)
         }finally{
           setScreenLoading(false)
         }
@@ -119,35 +120,37 @@ const CartPage = () => {
             })
             getCart();
         }catch(error){
-            alert('清除購物車商品失敗')
+            alert('清除購物車商品失敗', error)
         }
     }
 
     //結帳
-    const checkout = async(data) => {
-        setScreenLoading(true)
-        try{
-          await axios.post(`${BASE_URL}/v2/api/${API_PATH}/order`, data)
-          setCart({})
+    // const checkout = async(data) => {
+    //     setScreenLoading(true)
+    //     try{
+    //       await axios.post(`${BASE_URL}/v2/api/${API_PATH}/order`, data)
+    //       setCart({})
 
-          dispatch(pushMessage({
-            title: "提示",
-            text: "訂單送出成功",
-            status: "success"
-          }))
-          reset()
-        }catch (error){
-          //alert('結帳失敗')
-          dispatch(pushMessage({
-            title: "提示",
-            text: "訂單送出失敗",
-            status: "failed"
-          }))
+    //       dispatch(pushMessage({
+    //         title: "提示",
+    //         text: "訂單送出成功",
+    //         status: "success"
+    //       }))
+    //       //reset();
+    //       navigate('/checkout-success');
+    //     }catch (error){
+    //       //alert('結帳失敗')
+    //       const errorMessage = error.response?.data?.message || "請檢查輸入資料";
+    //       dispatch(pushMessage({
+    //         title: "提示",
+    //         text: `訂單送出失敗：${errorMessage}`,
+    //         status: "failed"
+    //       }))
 
-        }finally{
-          setScreenLoading(false)
-        }
-    }
+    //     }finally{
+    //       setScreenLoading(false)
+    //     }
+    // }
 
 
 
@@ -254,7 +257,7 @@ const CartPage = () => {
                     <div className="card-line mb-3"></div>
                     <p>總計: NT$ {cart.carts?.length === 0 ? 0 : (cart.total >= 5000 ? cart.final_total : cart.final_total + 150)}</p>
                     {/* {cart.total >= 5000 ? cart.final_total : cart.final_total + 150} */}
-                    <Link to="/checkout-form" className="btn btn-primary w-100">結帳</Link>
+                    <Link to="/checkout-form"  className="btn btn-primary w-100">結帳</Link>
                     <hr/>
                     <h5>購買注意事項:</h5>
                     <ol>

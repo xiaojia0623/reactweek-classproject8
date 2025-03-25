@@ -10,7 +10,6 @@ const API_PATH = import.meta.env.VITE_API_PATH;
 const BlogDetailPage = () => {
 
   const [frontDetailBlog, setFrontDetailBlog] = useState([]);
-  const [isLoading, setIsLoading] = useState(false)
   const [screenLoading, setScreenLoading] = useState(false);
   const {id: article_id} = useParams();
 

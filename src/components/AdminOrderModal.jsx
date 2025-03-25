@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import axios from 'axios'
 import { useDispatch } from 'react-redux'
 import { pushMessage } from '../redux/toastSlice'
@@ -7,22 +7,19 @@ import { Modal } from 'bootstrap'
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
 
-const TestAdminOrderModal = ({modalOrdersMode, tempOrders, isOrdersOpen, setIsOrdersOpen, setOrders}) => {
+const TestAdminOrderModal = ({tempOrders, isOrdersOpen, setIsOrdersOpen, setOrders}) => {
     const ordersModalRef = useRef(null); //使用useRef取得DOM數(預設值null，綁定在DOM)
     const [modalOrdersData, setModalOrdersData] = useState(tempOrders) //tempOrders這邊作為初始值
     const dispatch = useDispatch();
+    const [qtySelect] = useState(1);
+    
     useEffect(() => { //當tempOrders有變化時，modalCouponData也跟著變動
         setModalOrdersData({
             ...tempOrders
         })
     }, [tempOrders])
 
-    useEffect(() => {
-        //畫面渲染後取得 DOM 建立modal
-        new Modal(ordersModalRef.current, {
-        backdrop: false  //關閉點擊其他地方可將modal關閉
-        });
-    }, [])
+    
 
     useEffect(()=> { //判斷是否要開啟
         if (isOrdersOpen) {
@@ -30,6 +27,27 @@ const TestAdminOrderModal = ({modalOrdersMode, tempOrders, isOrdersOpen, setIsOr
             modalInstance.show(); 
         }
     },[isOrdersOpen])
+
+    //取得後台訂單資料
+    const getOrders = useCallback(async (page=1) => {
+        try{ //串接產品api
+        const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/admin/orders?page=${page}`);
+            setOrders(res.data.orders);
+        }catch(error) {
+            alert('訂單取得失敗!!', error)
+        }
+    }, [setOrders]);
+
+    useEffect(() => {
+        getOrders();
+    }, [getOrders])
+
+    useEffect(() => {
+        //畫面渲染後取得 DOM 建立modal
+        new Modal(ordersModalRef.current, {
+        backdrop: false  //關閉點擊其他地方可將modal關閉
+        });
+    }, [getOrders])
 
 
     //調整訂單產品個數
@@ -49,20 +67,7 @@ const TestAdminOrderModal = ({modalOrdersMode, tempOrders, isOrdersOpen, setIsOr
     }
     
 
-    //取得後台訂單資料
-    const getOrders = async (page=1) => {
-        try{ //串接產品api
-        const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/admin/orders?page=${page}`);
-            setOrders(res.data.orders);
-            setPageData(res.data.pagination);
-        }catch(error) {
-            alert('訂單取得失敗!!')
-        }
-    }
-
-    useEffect(() => {
-        getOrders();
-    }, [])
+    
 
     //model內的input監聽事件，呼叫此函式
     const handleModalInputChange = (e) => {
@@ -127,13 +132,13 @@ const TestAdminOrderModal = ({modalOrdersMode, tempOrders, isOrdersOpen, setIsOr
                 })
             );
             handleCloseOrdersModal();
-            getOrders(pageData.current_page);
 
         }catch(error) {
+            const errorMessage = error.response?.data?.message || "請檢查輸入資料";
             dispatch(
                 pushMessage({
                     title: "系統提示",
-                    text: "訂單編輯失敗",
+                    text: `訂單編輯失敗：${errorMessage}`,
                     status: "failed",
                 })
             );
@@ -141,44 +146,20 @@ const TestAdminOrderModal = ({modalOrdersMode, tempOrders, isOrdersOpen, setIsOr
     }
 
     //刪除單一訂單
-    const deleteOrderItem = () => {
+    const deleteOrderItem = (orderId) => {
         const allOrders = {
             ...modalOrdersData,
         };
-        const {[order_id]: _, ...newProducts} = allOrders.products;
+        const {[orderId]: _, ...newProducts} = allOrders.products;
         setModalOrdersData({...modalOrdersData, products: newProducts})
     }
 
     //關閉訂單Modal
     const handleCloseOrdersModal = () => {
         ordersModalRef.current.hide();
-        getOrders(pageData.current_page);
         setIsOrdersOpen(false);
     }
-    //更新訂單資料
-    const handleUpdateBlogs = async () => {
-
-        const apiCall = modalOrdersMode === 'create' ? createOrders() : editOrders();
-        
-        try{
-            await apiCall();
-            setIsBlogsModalOpen(false);
-            getOrders();
-
-            dispatch(pushMessage({
-                title: "系統提示",
-                text: "更新訂單成功",
-                status: "success"
-            }))
-        }catch (error) {
-            //alert('更新優惠券失敗')
-            dispatch(pushMessage({
-                title: "系統提示",
-                text: "更新訂單失敗",
-                status: "failed"
-            }))
-        }
-    }
+    
 
 
   return (
@@ -220,7 +201,7 @@ const TestAdminOrderModal = ({modalOrdersMode, tempOrders, isOrdersOpen, setIsOr
                                 <textarea value={modalOrdersData.message || ""} row={10} cols={30}  name="message" onChange={handalModalMessageChange} id="message" className='form-control' placeholder='客人留言'></textarea>
                             </div>
                             {modalOrdersData.products? (
-                                <table class="table">
+                                <table className="table">
                                     <thead>
                                         <tr>
                                             <th scope="col">產品名稱</th>
@@ -282,9 +263,9 @@ const TestAdminOrderModal = ({modalOrdersMode, tempOrders, isOrdersOpen, setIsOr
                             ) : (<p>目前尚未有任何產品</p>)}
 
                             {/* 勾選客人是否已付款 */}
-                            <div class="form-check">
-                                <input class="form-check-input" onChange={handleModalIsPaidChange} name='is_Paid' checked={modalOrdersData.is_paid} type="checkbox" value="" id="is_Paid" />
-                                <label htmlFor='is_Paid' class="form-check-label" for="flexCheckDefault">已付款</label>
+                            <div className="form-check">
+                                <input className="form-check-input" onChange={handleModalIsPaidChange} name='is_Paid' checked={modalOrdersData.is_paid} type="checkbox" value="" id="is_Paid" />
+                                <label htmlFor='is_Paid' className="form-check-label">已付款</label>
                             </div>
                         </div>
                     </div>

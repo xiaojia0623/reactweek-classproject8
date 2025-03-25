@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react'
 import axios from 'axios'
 import { Modal } from 'bootstrap'
-
+import { useDispatch } from 'react-redux';
+import { pushMessage } from '../redux/toastSlice';
 
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -9,7 +10,7 @@ const API_PATH = import.meta.env.VITE_API_PATH;
 
 const DeleteProductModal = ({tempProduct,getProducts, isOpen, setIsOpen}) => {
     const delProductModalRef = useRef(null);
-
+    const dispatch = useDispatch();
     useEffect(() => {
         new Modal(delProductModalRef.current, {
         backdrop: false  //關閉點擊其他地方可將modal關閉
@@ -28,7 +29,9 @@ const DeleteProductModal = ({tempProduct,getProducts, isOpen, setIsOpen}) => {
         try{
             await axios.delete(`${BASE_URL}/v2/api/${API_PATH}/admin/product/${tempProduct.id}`)
         }catch (error) {
+            const errorMessage = error.response?.data?.message || "請檢查輸入資料";
             alert('刪除產品失敗');
+            dispatch(pushMessage({ title: "錯誤", text: `刪除產品失敗：${errorMessage}`, status: "failed" }));
         }
     }
 
@@ -39,7 +42,8 @@ const DeleteProductModal = ({tempProduct,getProducts, isOpen, setIsOpen}) => {
             getProducts();
             handleCloseDelProductModal();
         }catch (error) {
-            alert('刪除產品失敗')
+            const errorMessage = error.response?.data?.message || "請檢查輸入資料";
+            dispatch(pushMessage({ title: "錯誤", text: `刪除產品失敗：${errorMessage}`, status: "failed" }));
         }
     }
 
