@@ -4,7 +4,6 @@ import { Modal } from 'bootstrap'
 import { useDispatch } from 'react-redux';
 import { pushMessage } from '../redux/toastSlice';
 
-
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
 
@@ -13,7 +12,7 @@ const DeleteProductModal = ({tempProduct,getProducts, isOpen, setIsOpen}) => {
     const dispatch = useDispatch();
     useEffect(() => {
         new Modal(delProductModalRef.current, {
-        backdrop: false  //關閉點擊其他地方可將modal關閉
+        backdrop: false
         });
     }, [])
 

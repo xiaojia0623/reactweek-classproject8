@@ -24,6 +24,7 @@ import AdminCouponPage from "../pages/admin/AdminCouponPage"
 import AdminOrderPage from "../pages/admin/AdminOrderPage"
 
 
+
 const router = createHashRouter([
     {
         path:'/',
@@ -49,16 +50,16 @@ const router = createHashRouter([
                 path: 'cart',
                 element: <CartPage />
             },
-            {   //test
+            { 
                 path:'checkout-form',
                 element: <CheckoutForm />
             },
-            {   //test
-                path:'checkout-payment',
-                element:<CheckoutPayment/>
+            {
+                path:'checkout-payment/:orderId',
+                element:<CheckoutPayment />
             },
             {
-                path: 'checkout-success',
+                path: 'checkout-success/:orderId',
                 element: <CheckoutSuccess />
             },
             {
@@ -91,7 +92,7 @@ const router = createHashRouter([
                 path:'orders',
                 element: <AdminOrderPage />
             },
-            {
+            { //原本
                 path: 'coupon',
                 element: <AdminCouponPage />
             },

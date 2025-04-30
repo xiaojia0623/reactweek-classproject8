@@ -3,6 +3,7 @@ import axios from 'axios'
 import Pagination from '../../components/Pagination'
 import DeleteOrderModal from '../../components/DeleteOrderModal';
 import AdminOrderModal from '../../components/AdminOrderModal';
+import Swal from 'sweetalert2';
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
@@ -60,8 +61,13 @@ const AdminOrderPage = () => {
             const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/admin/orders?page=${page}`);
                 setOrders(res.data.orders);
                 setPageData(res.data.pagination);
-        }catch(error) {
-            alert('訂單取得失敗!!', error)
+        }catch {
+            Swal.fire({
+                title: "訂單取得失敗!",
+                text: "請重新操作一次",
+                icon: "error",
+                confirmButtonText: "確定"
+            });
         }
     }
 
@@ -102,9 +108,6 @@ const AdminOrderPage = () => {
         getOrders(page)
     }
 
-    
-
-
   return (
     <div>
         <div className="container">
@@ -118,7 +121,8 @@ const AdminOrderPage = () => {
                     <table className="table">
                         <thead>
                             <tr>
-                                <th>訂單編號</th>
+                                <th>編號</th>
+                                <th>訂單號碼</th>
                                 <th>客人姓名</th>
                                 <th>建立時間</th>
                                 <th>訂單付款狀態</th>
@@ -128,13 +132,14 @@ const AdminOrderPage = () => {
                         </thead>
 
                         <tbody>
-                            {orders.map((order) => (
+                            {orders.map((order, idx) => (
                             <tr key={order.id}>
-                                <th scope="row">{order.num}</th>
+                                <th scope="row">{idx + 1}</th>
+                                <td>CRE{order.id}</td>
                                 <td>{order.user.name}</td>
                                 <td>{formatDueDate(order.create_at)}</td>
-                                <td>{order.iis_paid ? (<span className="text-success">已付款</span>) : <span className="text-danger">未付款</span>}</td>
-                                <td>{order.total.toLocaleString()}</td>
+                                <td>{order.is_paid ? (<span className="text-success">已付款</span>) : <span className="text-danger">未付款</span>}</td>
+                                <td>$ {order.total.toLocaleString()}</td>
                                 <td>
                                     <div className="btn-group" role="group">
                                         <button onClick={() => handleOpenOrdersModal('edit', order)} type="button" className="btn btn-outline-primary">編輯</button>
@@ -150,7 +155,7 @@ const AdminOrderPage = () => {
             </div>
             <Pagination getOrders={getOrders} pageData={pageData} handlePageChange={handlePageChange}/>
         </div>
-        <AdminOrderModal getOrders={getOrders} tempOrders={tempOrders} modalOrdersMode={modalOrdersMode} isOrdersOpen={isOrdersModalOpen} setIsOrdersOpen={setIsOrdersModalOpen}/>
+        <AdminOrderModal getOrders={getOrders} setOrders={setOrders} tempOrders={tempOrders} modalOrdersMode={modalOrdersMode} isOrdersOpen={isOrdersModalOpen} setIsOrdersOpen={setIsOrdersModalOpen}/>
         
 
         <DeleteOrderModal deleteOrderModalState={deleteOrderModalState} tempOrders={tempOrders} getOrders={getOrders} isDelOrdersModalOpen={isDelOrdersModalOpen} setIsDelOrdersModalOpen={setIsDelOrdersModalOpen}/>

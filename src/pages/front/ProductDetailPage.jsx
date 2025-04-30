@@ -22,8 +22,8 @@ const ProductDetailPage = () => {
         try{
           const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/cart`);
           dispatch(updateCartData(res.data.data))
-        }catch(error){
-          alert('取得購物車失敗', error)
+        }catch {
+            dispatch(pushMessage({ text: "取得購物車失敗", status: "failed" }));
         }
         
         

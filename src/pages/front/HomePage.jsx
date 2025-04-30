@@ -14,24 +14,22 @@ AOS.init();
 
 AOS.init({
     // Global settings:
-    disable: false, // accepts following values: 'phone', 'tablet', 'mobile', boolean, expression or function
-    startEvent: 'DOMContentLoaded', // name of the event dispatched on the document, that AOS should initialize on
-    initClassName: 'aos-init', // class applied after initialization
-    animatedClassName: 'aos-animate', // class applied on animation
-    useClassNames: false, // if true, will add content of `data-aos` as classes on scroll
-    disableMutationObserver: false, // disables automatic mutations' detections (advanced)
-    debounceDelay: 50, // the delay on debounce used while resizing window (advanced)
-    throttleDelay: 99, // the delay on throttle used while scrolling the page (advanced)
+    disable: false,
+    startEvent: 'DOMContentLoaded',
+    initClassName: 'aos-init', 
+    animatedClassName: 'aos-animate',
+    useClassNames: false,
+    disableMutationObserver: false, 
+    debounceDelay: 50,
+    throttleDelay: 99,
     
-  
-    // Settings that can be overridden on per-element basis, by `data-aos-*` attributes:
-    offset: 120, // offset (in px) from the original trigger point
-    delay: 0, // values from 0 to 3000, with step 50ms
-    duration: 400, // values from 0 to 3000, with step 50ms
-    easing: 'ease', // default easing for AOS animations
-    once: false, // whether animation should happen only once - while scrolling down
-    mirror: false, // whether elements should animate out while scrolling past them
-    anchorPlacement: 'top-bottom', // defines which position of the element regarding to window should trigger the animation
+    offset: 120,
+    delay: 0,
+    duration: 400,
+    easing: 'ease',
+    once: false,
+    mirror: false,
+    anchorPlacement: 'top-bottom',
   
 });
 
@@ -64,31 +62,29 @@ const HomePage = () => {
     }, [dispatch]);
 
     useEffect(() => {
-        new Swiper(swiperRef.current, {
-            modules: [Autoplay],
-            loop: true,
-            autoplay: {
-              delay: 3000,
-              disableOnInteraction: false,
-            },
-            slidesPerView: 2,
-            spaceBetween: 10,
-            breakpoints: {
-                1280: {
-                    slidesPerView:3,
-                },
-                768: {
-                    slidesPerView: 2,
-                },
-                600: {
-                    slidesPerView: 1,
-                },
-                200: {
-                    slidesPerView: 1,
-                },
-            },
+        const maxSlidesPerView = 4;
+        const slidesPerGroup = 1;
+        const enableLoop = homeProducts.length >= maxSlidesPerView + slidesPerGroup;
+    
+        const swiper = new Swiper(swiperRef.current, {
+          modules: [Autoplay],
+          loop: enableLoop,
+          autoplay: {
+            delay: 3000,
+            disableOnInteraction: false,
+          },
+          slidesPerView: 4,
+          spaceBetween: 10,
+          breakpoints: {
+            1280: { slidesPerView: 3 },
+            768:  { slidesPerView: 2 },
+            600:  { slidesPerView: 1 },
+            200:  { slidesPerView: 1 },
+          },
         });
-    })
+    
+        return () => swiper.destroy();   // 清理
+      }, [homeProducts.length]);
   return (
     <>
         <div className='container mb-5' data-aos="fade-down">
@@ -104,7 +100,7 @@ const HomePage = () => {
 
         <div className="container">
             <h2 className='text-center fw-bold mb-5'data-aos="fade-down">創意工藝</h2>
-            <Link to="/product" className='icon-link icon-link-hover align-items-center bg-none m-0 text-decoration-none  fs-5'>去看看<i className="bi bi-chevron-right ms-1 d-flex"  aria-hidden="true"></i></Link>
+            <Link to="/product" className='icon-link icon-link-hover align-items-center bg-none p-0 m-0 text-decoration-none  fs-5'>去看看<i className="bi bi-chevron-right ms-1 d-flex"  aria-hidden="true"></i></Link>
             <div className='row row-cols-1 row-cols-sm-2 row-cols-md-3 mt-3  '  data-aos="fade-right">
                 <div className='col'>
                     <div className="card border-0 h-100">
@@ -152,7 +148,7 @@ const HomePage = () => {
             <h2 className='text-center fw-bold mb-5'>精選產品</h2>
             
             <div className="container " data-aos="fade-right">
-            <Link to="/product" className='icon-link icon-link-hover align-items-center bg-none m-0 text-decoration-none  fs-5'>去看看<i className="bi bi-chevron-right ms-1 d-flex"  aria-hidden="true"></i></Link>
+            <Link to="/product" className='icon-link icon-link-hover align-items-center bg-none p-0  m-0 text-decoration-none  fs-5'>去看看<i className="bi bi-chevron-right ms-1 d-flex"  aria-hidden="true"></i></Link>
                 <div ref={swiperRef} className="swiper mt-4">
                     <div className="swiper-wrapper">
                         {homeProducts.map((homeProductItem) => (
@@ -163,7 +159,6 @@ const HomePage = () => {
                                             <img src={homeProductItem.imageUrl} className="card-img-top rounded-0 rounded-top img-hover" style={{height: '400px',width:"100%", objectFit:'cover'}} alt={homeProductItem.title}/>
                                         </div>
                                     </Link>
-                                    {/* <a href="#" className="text-dark"></a> */}
                                     <div className="card-body p-3">
                                         <h4 className="mb-3 mt-3">
                                             <Link to={`/product/${homeProductItem.id}`} className='text-dark text-decoration-none'>{homeProductItem.title}</Link>

@@ -38,6 +38,21 @@ const ProductPage = () => {
     getAllProducts();
   }, [getAllProducts]);
 
+  const getCart = useCallback(async () => {
+    try{
+      const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/cart`);
+      dispatch(updateCartData(res.data.data))
+    }catch{
+      dispatch(pushMessage({text: "取得購物車失敗", status: "failed" }));
+    }
+    
+    
+  }, [dispatch]);
+
+  useEffect(() => {
+    getCart();
+}, [getCart]);
+
 
   const addCartItem = async (product_id, qty, title) => {
     setScreenLoading(true)
@@ -48,14 +63,16 @@ const ProductPage = () => {
           qty:Number(qty)
         }
       })
-      dispatch(updateCartData({
+      // dispatch(updateCartData());
+      dispatch(pushMessage({
         title: "系統提示",
         text: `已加入 ${title} 到購物車`,
         status: "success"
-      }))
+      }));
+      getCart();
     }catch (error){
       const errorMessage = error.response?.data?.message || "請檢查輸入資料";
-      dispatch(updateCartData({
+      dispatch(pushMessage({
         title: "系統提示",
         text: `加入購物車失敗：${errorMessage}`,
         status: "failed"
@@ -111,7 +128,7 @@ const ProductPage = () => {
                       <button type='button' className="btn btn-secondary mb-3 mb-md-0 me-md-3  w-100">
                         <Link to={`/product/${product.id}`} style={{textDecoration:'none', color:'white', fontWeight:'bold'}}>查看內容</Link>
                         </button>
-                      <button type='button' onClick={() => addCartItem(product.id, qtySelect, product.title)} className="btn btn-primary  w-100">加入購物車</button>
+                      <button type='button' onClick={() => addCartItem(product.id, qtySelect, product.title)} className="btn btn-primary border-0 w-100" style={{backgroundColor:'#10100f'}}>加入購物車</button>
                     </div>
                   </div>
                 </div>

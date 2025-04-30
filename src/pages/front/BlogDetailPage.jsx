@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom'
 import axios from "axios";
 import {  useParams } from "react-router-dom";
 import Loading from '../../components/Loading';
-
+import { useDispatch } from 'react-redux';
+import { pushMessage } from '../../redux/toastSlice';
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
 
@@ -12,23 +13,21 @@ const BlogDetailPage = () => {
   const [frontDetailBlog, setFrontDetailBlog] = useState([]);
   const [screenLoading, setScreenLoading] = useState(false);
   const {id: article_id} = useParams();
-
+  const dispatch = useDispatch();
   useEffect(() => {
     const getBlogs = async () => {
         setScreenLoading(true)
         try{
           const { data } = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/article/${article_id}`);
-          console.log("文章詳細資料:", data.article); 
             setFrontDetailBlog(data.article);
-        } catch(error){
-            alert('取得產品失敗')
-            console.error("獲取文章詳情失敗", error);
+        } catch{
+            dispatch(pushMessage({ text: '獲取文章詳情失敗', status: 'failed' }));
         }finally{
             setScreenLoading(false)
         }
     }
     getBlogs();
-  }, [article_id])
+  }, [article_id, dispatch])
 
 
   return (

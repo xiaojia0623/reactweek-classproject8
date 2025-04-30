@@ -8,6 +8,8 @@ import { useDispatch } from 'react-redux'
 import { updateCartData } from '../../redux/cartSlice';
 import { pushMessage } from '../../redux/toastSlice';
 import Loading from '../../components/Loading';
+import Swal from 'sweetalert2';
+import Accordion from 'react-bootstrap/Accordion';
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
@@ -17,58 +19,114 @@ const CartPage = () => {
     const [product, setProduct] = useState([])
     const dispatch = useDispatch();
     const  swiperRef = useRef(null);
-
+    const [coupon, setCoupon] = useState("");
     
 
     //全螢幕的loading
     const [screenLoading, setScreenLoading] = useState(false);
 
-    //取得後台優惠券折扣%與序號
-    
+    const handleApplyCoupon = async (coupon) => {
+        try {
+            await axios.post(`${BASE_URL}/v2/api/${API_PATH}/coupon`,{
+                data: {
+                code: coupon
+                }
+            })
+            
+            Swal.fire({
+                    title: "優惠券已套用成功！",
+                    icon: "success",
+                    draggable: true
+                });
+        } catch (error) {
+          Swal.fire({
+            title: '優惠券無效或已過期',
+            text: error.response.data.message,
+            icon: "error",
+            confirmButtonText: "確定"
+          });
+        } finally {
+          getCart();
+        }
+    };
+
+    const calculateCartTotal = (cart = {}) => {
+        // 計算小計
+        const subtotal = cart.carts?.reduce((sum, item) => {
+          return sum + item.final_total;
+        }, 0) || 0;
+      
+        // 計算運費
+        const shippingFee = subtotal >= 5000 ? 0 : 150;
+      
+        // 計算金額（即小計 + 運費）
+        const amount = subtotal + shippingFee;
+      
+        // 計算折扣金額（如果有的話）
+        const discountAmount = cart.final_total ? subtotal - cart.final_total : 0;
+      
+        // 計算折扣百分比
+        const discountPercentage = subtotal > 0 ? ((discountAmount / subtotal) * 100).toFixed(2) : 0;
+      
+        // 計算總計（即金額 - 折扣）
+        const total = amount - discountAmount;
+      
+        return {
+          subtotal,
+          shippingFee,
+          amount,
+          discountAmount,
+          discountPercentage,
+          total
+        };
+    };
+    const { subtotal, shippingFee, discountAmount, amount, total, discountPercentage } = calculateCartTotal(cart);
 
     const getCart = useCallback(async () => {
         try{
             const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/cart`)
             setCart(res.data.data);
             dispatch(updateCartData(res.data.data));
-        }catch(error){
-            alert('取購物車失敗', error)
+        }catch{
+            dispatch(pushMessage({ text: '取購物車失敗', status: 'failed' }));
         }
     },[dispatch])
 
     useEffect(() => {
         getCart();
         
-        new Swiper(swiperRef.current, {
-            modules: [Autoplay],
-            loop: true,
-            autoplay: {
-                delay: 2500,
-                disableOnInteraction: false,
-            },
-            slidesPerView: 3,
-            spaceBetween: 20,
-            breakpoints: {
-              1280: {
-                slidesPerView:3,
-              },
-              768: {
-                slidesPerView: 2,
-              },
-              600: {
-                slidesPerView: 1,
-              },
-              200: {
-                slidesPerView: 1,
-              },
-            },
-        });
-    },[getCart])
+        if (product.length > 0) {
+            new Swiper(swiperRef.current, {
+                modules: [Autoplay],
+                loop: false,
+                autoplay: {
+                    delay: 2500,
+                    disableOnInteraction: false,
+                },
+                slidesPerView: 3,
+                spaceBetween: 20,
+                breakpoints: {
+                  1280: {
+                    slidesPerView:3,
+                  },
+                  768: {
+                    slidesPerView: 2,
+                  },
+                  600: {
+                    slidesPerView: 1,
+                  },
+                  200: {
+                    slidesPerView: 1,
+                  },
+                },
+            });
+        }
+    },[getCart, product])
 
     useEffect(() => {
         const getProducts = async () => {
           try {
-            const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/products`);
+            const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/products/all`);
             setProduct(res.data.products);
           } catch (error) {
             const errorMessage = error.response?.data?.message || "請檢查輸入資料";
@@ -89,7 +147,11 @@ const CartPage = () => {
             await axios.delete(`${BASE_URL}/v2/api/${API_PATH}/cart/${cartItem_id}`);
             getCart();
         }catch(error){
-            alert('刪除失敗', error)
+            Swal.fire({
+                icon: 'error',
+                title: '刪除失敗',
+                text: error.response?.data?.message || '請稍後再試',
+            });
         }finally{
             setScreenLoading(false)
         }
@@ -101,8 +163,14 @@ const CartPage = () => {
         try{
           await axios.delete(`${BASE_URL}/v2/api/${API_PATH}/carts`)
           getCart();
-        }catch (error){
-          alert('清除購物車失敗', error)
+        }catch {
+          //alert('購物車無商品無法清除唷!', error)
+          Swal.fire({
+            title: 'Error!',
+            text: '購物車無商品無法清除唷!',
+            icon: 'error',
+            confirmButtonText: 'OK'
+          })
         }finally{
           setScreenLoading(false)
         }
@@ -123,36 +191,6 @@ const CartPage = () => {
             alert('清除購物車商品失敗', error)
         }
     }
-
-    //結帳
-    // const checkout = async(data) => {
-    //     setScreenLoading(true)
-    //     try{
-    //       await axios.post(`${BASE_URL}/v2/api/${API_PATH}/order`, data)
-    //       setCart({})
-
-    //       dispatch(pushMessage({
-    //         title: "提示",
-    //         text: "訂單送出成功",
-    //         status: "success"
-    //       }))
-    //       //reset();
-    //       navigate('/checkout-success');
-    //     }catch (error){
-    //       //alert('結帳失敗')
-    //       const errorMessage = error.response?.data?.message || "請檢查輸入資料";
-    //       dispatch(pushMessage({
-    //         title: "提示",
-    //         text: `訂單送出失敗：${errorMessage}`,
-    //         status: "failed"
-    //       }))
-
-    //     }finally{
-    //       setScreenLoading(false)
-    //     }
-    // }
-
-
 
   return (
     <>
@@ -198,10 +236,11 @@ const CartPage = () => {
                                             <i className="fas fa-minus"></i>
                                             </button>
                                         </div>
+                                        <label htmlFor='cartItemQty' hidden></label>
                                         <input
                                             type="text"
+                                            id='cartItemQty'
                                             className="form-control border-0 text-center my-auto shadow-none"
-                                            placeholder=""
                                             aria-label="Example text with button addon"
                                             aria-describedby="button-addon1"
                                             value={cartItem.qty}
@@ -241,23 +280,42 @@ const CartPage = () => {
                     <h3 className='text-center'>目前購物車沒有產品喔! 再去逛逛吧!</h3>
                 </div>)}
 
-                
+            
 
             <div className="card cart-card">
                 <div className="card-body">
                     <h5 className="card-title fw-bold fs-2 mb-3">訂單資訊</h5>
                     <div className="cart-content d-flex justify-content-between">
                         <p>小計</p>
-                        <p>NT$ {cart.total}</p>
+                        <p>NT$ {subtotal.toLocaleString()}</p>
                     </div>
                     <div className="cart-content d-flex justify-content-between">
                         <p>運費</p>
-                        <p>{cart.total >= 5000 ? '免運費' : `+150`}</p>
+                        <p>{shippingFee === 0 ? '免運費' : `NT$ ${shippingFee.toLocaleString()}`}
+                        </p>
+                    </div>
+                    <div className="cart-content d-flex justify-content-between">
+                        <p>金額</p>
+                        <p>NT$ {amount.toLocaleString()}
+                        </p>
                     </div>
                     <div className="card-line mb-3"></div>
-                    <p>總計: NT$ {cart.carts?.length === 0 ? 0 : (cart.total >= 5000 ? cart.final_total : cart.final_total + 150)}</p>
-                    {/* {cart.total >= 5000 ? cart.final_total : cart.final_total + 150} */}
-                    <Link to="/checkout-form"  className="btn btn-primary w-100">結帳</Link>
+                    <div className="d-flex justify-content-between pb-3">
+                        <p className="fs-10 fw-bold">優惠卷折扣</p>
+                        <p className="fs-10 fw-bold">
+                        {discountAmount > 0 ? `${discountPercentage}%` : '無折扣'}
+                        </p>
+                    </div>
+                    <p>總計: NT${total.toLocaleString()}</p>
+                    {cart.carts?.length === 0 ? (
+                    <button className="btn btn-secondary w-100" disabled>
+                        結帳
+                    </button>
+                    ) : (
+                    <Link to="/checkout-form" className="btn btn-primary w-100">
+                        結帳
+                    </Link>
+                    )}
                     <hr/>
                     <h5>購買注意事項:</h5>
                     <ol>
@@ -278,7 +336,7 @@ const CartPage = () => {
             </div>
             
         </div>
-        <div className="input-group w-50 mb-3 align-items-center">
+        <div className="input-group inputCoupon mb-3 align-items-center">
             <label htmlFor="couponcode" className='fs-4 me-2' style={{color:'#474646 '}}>填寫優惠券序號 </label>
             <input
                 type="text"
@@ -288,12 +346,15 @@ const CartPage = () => {
                 placeholder="Coupon Code"
                 aria-label="Recipient's username"
                 aria-describedby="button-addon2"
+                value={coupon}
+                onChange={(e) => setCoupon(e.target.value)}
             />
             <div className="input-group-append">
                 <button
                     className="btn btn-outline-dark border-bottom border-top-0 border-start-0 border-end-0 rounded-0"
                     type="button"
                     id="button-addon2"
+                    onClick={() => handleApplyCoupon(coupon)}
                 >
                     <i className="fas fa-paper-plane"></i>
                 </button>
@@ -326,68 +387,38 @@ const CartPage = () => {
         <h2 className='text-start fw-bold mb-5'>有問題就該詢問 ...</h2>
         <div className="cart-faq mb-5">
             <h3 className='text-center fw-bold fs-1'>FAQ</h3>
-            <div className="accordion" id="accordionExample">
-                <div className="accordion-item">
-                    <h2 className="accordion-header">
-                        <button className="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                            1. 請問產品何時會發貨？
-                        </button>
-                    </h2>
-                    <div id="collapseOne" className="accordion-collapse collapse" data-bs-parent="#accordionExample">
-                        <div className="accordion-body">
-                            <strong>解答：</strong> 當天中午 12 點前下單，當日出貨；12 點後下單，次日出貨。預購商品將依公告時間發貨。
-                        </div>
-                    </div>
-                </div>
-                <div className="accordion-item">
-                    <h2 className="accordion-header">
-                        <button className="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                            2. 如果收到的陶瓷產品破損，該怎麼辦？
-                        </button>
-                    </h2>
-                    <div id="collapseTwo" className="accordion-collapse collapse" data-bs-parent="#accordionExample">
-                        <div className="accordion-body">
-                            <strong>解答：</strong> 若商品在運送過程中受損，請於 48 小時內拍照並聯繫客服，我們將免費補寄或退款。
-                        </div>
-                    </div>
-                </div>
-                <div className="accordion-item">
-                    <h2 className="accordion-header">
-                        <button className="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                            3. 是否提供客製化陶瓷訂製服務？
-                        </button>
-                    </h2>
-                    <div id="collapseThree" className="accordion-collapse collapse" data-bs-parent="#accordionExample">
-                        <div className="accordion-body">
-                            <strong>解答：</strong> 是的！我們提供客製化服務，可刻字、彩繪圖案或訂製專屬設計，歡迎聯繫客服討論需求。
-                        </div>
-                    </div>
-                </div>
-                <div className="accordion-item">
-                    <h2 className="accordion-header">
-                        <button className="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
-                            4. 請問有提供貨到付款嗎？
-                        </button>
-                    </h2>
-                    <div id="collapseFour" className="accordion-collapse collapse" data-bs-parent="#accordionExample">
-                        <div className="accordion-body">
-                            <strong>解答：</strong> 是的，我們提供貨到付款服務，僅適用於本地訂單，付款時請準備現金或支援的電子支付方式。
-                        </div>
-                    </div>
-                </div>
-                <div className="accordion-item">
-                    <h2 className="accordion-header">
-                        <button className="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
-                            5. 退換貨政策是什麼？
-                        </button>
-                    </h2>
-                    <div id="collapseFive" className="accordion-collapse collapse" data-bs-parent="#accordionExample">
-                        <div className="accordion-body">
-                            <strong>解答：</strong> 除客製化商品外，所有產品皆享 7 天鑑賞期，請確保商品未使用且包裝完整，聯繫客服辦理退換貨。
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <Accordion>
+                <Accordion.Item eventKey="0">
+                    <Accordion.Header>1. 請問產品何時會發貨？</Accordion.Header>
+                    <Accordion.Body>
+                    <strong>解答：</strong> 當天中午 12 點前下單，當日出貨；12 點後下單，次日出貨。預購商品將依公告時間發貨。
+                    </Accordion.Body>
+                </Accordion.Item>
+                <Accordion.Item eventKey="1">
+                    <Accordion.Header>2. 如果收到的陶瓷產品破損，該怎麼辦？</Accordion.Header>
+                    <Accordion.Body>
+                    <strong>解答：</strong> 若商品在運送過程中受損，請於 48 小時內拍照並聯繫客服，我們將免費補寄或退款。
+                    </Accordion.Body>
+                </Accordion.Item>
+                <Accordion.Item eventKey="2">
+                    <Accordion.Header>3. 是否提供客製化陶瓷訂製服務？</Accordion.Header>
+                    <Accordion.Body>
+                    <strong>解答：</strong> 是的！我們提供客製化服務，可刻字、彩繪圖案或訂製專屬設計，歡迎聯繫客服討論需求。
+                    </Accordion.Body>
+                </Accordion.Item>
+                <Accordion.Item eventKey="3">
+                    <Accordion.Header>4. 請問有提供貨到付款嗎？</Accordion.Header>
+                    <Accordion.Body>
+                    <strong>解答：</strong> 是的，我們提供貨到付款服務，僅適用於本地訂單，付款時請準備現金或支援的電子支付方式。
+                    </Accordion.Body>
+                </Accordion.Item>
+                <Accordion.Item eventKey="4">
+                    <Accordion.Header>5. 退換貨政策是什麼？</Accordion.Header>
+                    <Accordion.Body>
+                    <strong>解答：</strong> 除客製化商品外，所有產品皆享 7 天鑑賞期，請確保商品未使用且包裝完整，聯繫客服辦理退換貨。
+                    </Accordion.Body>
+                </Accordion.Item>
+            </Accordion>
         </div>
         {screenLoading && ( <Loading />)}
     </div>

@@ -1,0 +1,62 @@
+.payment-page{
+    height: 66.6vh;
+    .payment-orderInfo{
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        h5{
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: $black;
+            margin-bottom: 20px;
+        }
+    }
+}
+
+.custom-step-line{
+    height: 5px;
+    width: 50px;
+    background-color: red;
+}
+.vline{
+    width: 6px;
+    height: 40px;
+    padding: 0;
+    margin: 0 auto;
+    background-color: black;
+}
+
+.lineblack{
+    background-color: black;
+}
+
+
+
+@include pad{
+    .payment-page{
+        height: 100%;
+        width: 100%;
+        .payment-orderInfo{
+            margin-bottom: 24.6%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            h5{
+                text-align: center;
+                font-size: 26px;
+            }
+            .col-md-6{
+                width: 100%;
+            }
+        }
+    }
+    .vline{
+        display: none;
+  }
+}
+
+@include mobile{
+    .payment-page{
+        height: auto;
+    }
+}

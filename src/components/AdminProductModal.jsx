@@ -9,25 +9,24 @@ const API_PATH = import.meta.env.VITE_API_PATH;
 
 const AdminProductModal = ({modalMode, tempProduct, isOpen, setIsOpen, getProducts, setIsProductModalOpen}) => {
 
-    const productModalRef = useRef(null); //使用useRef取得DOM數(預設值null，綁定在DOM)
-    const fileInputRef = useRef(null); // 給 input type="file" 的 ref
-    const [modalData, setModalData] = useState(tempProduct) //tempProduct這邊作為初始值
+    const productModalRef = useRef(null);
+    const fileInputRef = useRef(null);
+    const [modalData, setModalData] = useState(tempProduct) 
     const dispatch = useDispatch();
 
-    useEffect(() => { //當tempProduct有變化時，modalData也跟著變動
+    useEffect(() => {
         setModalData({
             ...tempProduct
         })
     }, [tempProduct])
 
     useEffect(() => {
-        //畫面渲染後取得 DOM 建立modal
         new Modal(productModalRef.current, {
-        backdrop: false  //關閉點擊其他地方可將modal關閉
+        backdrop: false
         });
     }, [])
 
-    useEffect(()=> { //判斷是否要開啟
+    useEffect(()=> {
         if (isOpen) {
             const modalInstance = Modal.getInstance(productModalRef.current);
             modalInstance.show(); 
@@ -45,14 +44,11 @@ const AdminProductModal = ({modalMode, tempProduct, isOpen, setIsOpen, getProduc
                 is_enabled: modalData.is_enabled ? 1 : 0
                 }
             })
-            //alert('恭喜! 新增成功');
             dispatch(pushMessage({
                 title: "系統提示",
                 text: "恭喜! 新增成功",
                 status: "success"
             }))
-            
-
             handleCloseProductModal();
         }catch (error) {
             const errorMessage = error.response?.data?.message || "請檢查輸入資料";
@@ -82,7 +78,12 @@ const AdminProductModal = ({modalMode, tempProduct, isOpen, setIsOpen, getProduc
                 imageUrl: uploadImageUrl
             })
         }catch (error) {
-            console.error(error)
+            const errorMessage = error.response?.data?.message || "請檢查輸入資料";
+            dispatch(pushMessage({
+                title: "系統提示",
+                text: `圖片上傳失敗，請檢查輸入資料：${errorMessage}`,
+                status: "failed"
+            }))
         }
     }
 
@@ -159,7 +160,7 @@ const AdminProductModal = ({modalMode, tempProduct, isOpen, setIsOpen, getProduc
     //關閉產品Modal
     const handleCloseProductModal = () => {
         const modalInstance = Modal.getInstance(productModalRef.current);
-        modalInstance.hide(); //關閉modal
+        modalInstance.hide();
         setModalData({imageUrl: "", title:"", category:"", unit:"", origin_price:"", price:"", description:"", content:"", is_enabled:"", imgupdate:""})
         
         // 清空 input file

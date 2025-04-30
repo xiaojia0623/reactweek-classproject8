@@ -19,7 +19,7 @@ const AdminLayout = () => {
     };
 
   return (
-    <div className='fixed-top'>
+    <div className='admin-layout fixed-top'>
         <nav className="navbar bg-primary border-bottom border-body" data-bs-theme="dark">
             <div className="container">
                 <ul className="navbar-nav flex-row gap-5 fs-5 align-items-center">

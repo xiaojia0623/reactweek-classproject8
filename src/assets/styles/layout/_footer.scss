@@ -1,3 +1,9 @@
-.footer-logo{
-    color: #7f7f7f ;
+.home-icon-hover{
+    &:hover{
+        background: #4d4f4f;
+    }
+}
+
+.bg-color{
+    background-color: #858585;
 }

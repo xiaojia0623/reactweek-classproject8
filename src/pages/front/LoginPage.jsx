@@ -45,7 +45,7 @@ const LoginPage = () => {
                 text: "驗證登入成功",
                 status: "success"
             }))
-            setIsLogin(true); //若已登入的狀態則顯示true
+            setIsLogin(true);
             navigate("/admin/home")
         }catch(error){
             dispatch(pushMessage({
@@ -62,7 +62,7 @@ const LoginPage = () => {
     <>
     {isLogin ? <AdminHomePage /> : (
         <div className="login" style={{backgroundImage: "url('https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8Y2VyYW1pY3N8ZW58MHx8MHx8fDA%3D')",
-            backgroundSize: "cover",backgroundPosition: "center",height: "100vh",
+            backgroundSize: "cover",backgroundPosition: "center",height: "67.6vh",
         }}>
             <div className="container">
                 <form onSubmit={(e) => handleLogin(e)}>

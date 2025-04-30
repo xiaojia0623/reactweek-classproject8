@@ -1,25 +1,4 @@
-import Iframe from 'react-iframe'
-import { useEffect, useRef} from 'react'
-import Loading from '../../components/Loading';
-import Swiper from "swiper";
-import { Autoplay } from "swiper/modules";
-import "swiper/css";
-
 const AboutUsPage = () => {
-    const  swiperRef = useRef(null);
-    useEffect(() => {
-        new Swiper(swiperRef.current, {
-            scrollbar: {
-                el: ".swiper-scrollbar",
-                hide: true,
-              },
-            slidesPerView: 2,
-            spaceBetween: 20,
-            breakpoints:{
-                slidesPerView:1,
-            }
-        });
-    })
   return (
     <>
     <div className='mt-3 mt-md-5 mb-3 mb-md-5' data-aos="fade-down-left">

@@ -15,15 +15,9 @@ const toastSlice = createSlice({
                 id, title, text, status
             })
         },
-        removeMessage(state, action){
-            const message_id = action.payload;
-            const index = state.messages.findIndex((message) => {
-                return message.id === message_id
-            })
-            if (index !== -1){
-                state.messages.splice(index, 1);
-            }
-        }
+        removeMessage(state, action) {
+            state.messages = state.messages.filter((msg) => msg.id !== action.payload);
+        },
     }
 })
 

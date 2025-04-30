@@ -3,38 +3,49 @@ import axios from 'axios'
 import { useDispatch } from 'react-redux'
 import { pushMessage } from '../redux/toastSlice'
 import { Modal } from 'bootstrap'
+import Swal from "sweetalert2";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
 
-const TestAdminOrderModal = ({tempOrders, isOrdersOpen, setIsOrdersOpen, setOrders}) => {
-    const ordersModalRef = useRef(null); //使用useRef取得DOM數(預設值null，綁定在DOM)
-    const [modalOrdersData, setModalOrdersData] = useState(tempOrders) //tempOrders這邊作為初始值
+const AdminOrderModal = ({tempOrders, isOrdersOpen, setIsOrdersOpen, setOrders}) => {
+    const ordersModalRef = useRef(null);
+    const [modalOrdersData, setModalOrdersData] = useState(tempOrders)
     const dispatch = useDispatch();
     const [qtySelect] = useState(1);
     
-    useEffect(() => { //當tempOrders有變化時，modalCouponData也跟著變動
+    useEffect(() => {
         setModalOrdersData({
             ...tempOrders
         })
     }, [tempOrders])
 
-    
 
-    useEffect(()=> { //判斷是否要開啟
+    useEffect(()=> {
         if (isOrdersOpen) {
             const modalInstance = Modal.getInstance(ordersModalRef.current);
             modalInstance.show(); 
         }
     },[isOrdersOpen])
 
+    const getToken = () => {
+        return document.cookie.replace(/(?:(?:^|.*;\s*)jiahu0724428\s*=\s*([^;]*).*$)|^.*$/, '$1');
+    };
+
     //取得後台訂單資料
     const getOrders = useCallback(async (page=1) => {
         try{ //串接產品api
-        const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/admin/orders?page=${page}`);
-            setOrders(res.data.orders);
+            const token = getToken();
+            axios.defaults.headers.common['Authorization'] = token;
+            const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/admin/orders?page=${page}`);
+                setOrders(res.data.orders);
         }catch(error) {
-            alert('訂單取得失敗!!', error)
+            Swal.fire({
+                title: "訂單取得失敗!",
+                text: error.response.data.message.join("、"),
+                icon: "error",
+                confirmButtonText: "確定"
+            });
         }
     }, [setOrders]);
 
@@ -45,7 +56,7 @@ const TestAdminOrderModal = ({tempOrders, isOrdersOpen, setIsOrdersOpen, setOrde
     useEffect(() => {
         //畫面渲染後取得 DOM 建立modal
         new Modal(ordersModalRef.current, {
-        backdrop: false  //關閉點擊其他地方可將modal關閉
+        backdrop: false
         });
     }, [getOrders])
 
@@ -65,9 +76,6 @@ const TestAdminOrderModal = ({tempOrders, isOrdersOpen, setIsOrdersOpen, setOrde
             products: newProductQty,
         })
     }
-    
-
-    
 
     //model內的input監聽事件，呼叫此函式
     const handleModalInputChange = (e) => {
@@ -116,7 +124,7 @@ const TestAdminOrderModal = ({tempOrders, isOrdersOpen, setIsOrdersOpen, setOrde
                 message: message || "",
                 total: totalAmount,
                 create_at : Math.floor(new Date(modalOrdersData.create_at).getTime() / 1000), 
-                is_paid: modalOrdersData.is_paid === true || modalOrdersData.is_paid === "true" ? true : false // 確保後端需要的是數字
+                is_paid: modalOrdersData.is_paid === true || modalOrdersData.is_paid === "true" ? true : false
             }
         }
 
@@ -156,7 +164,7 @@ const TestAdminOrderModal = ({tempOrders, isOrdersOpen, setIsOrdersOpen, setOrde
 
     //關閉訂單Modal
     const handleCloseOrdersModal = () => {
-        ordersModalRef.current.hide();
+        //ordersModalRef.current.hide();
         setIsOrdersOpen(false);
     }
     
@@ -167,7 +175,7 @@ const TestAdminOrderModal = ({tempOrders, isOrdersOpen, setIsOrdersOpen, setOrde
         <div className="modal-dialog modal-dialog-centered modal-xl">
             <div className="modal-content">
                 <div className="modal-header">
-                    <h5 className="modal-title">編輯訂單</h5>
+                    <h5 className="modal-title">編輯訂單 #{tempOrders.num} 詳細資料</h5>
                     <button type="button" onClick={handleCloseOrdersModal} className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 
@@ -176,13 +184,13 @@ const TestAdminOrderModal = ({tempOrders, isOrdersOpen, setIsOrdersOpen, setOrde
                     <div className="row">
                         <div className="col">
                             <div className="mb-3">
-                                <label htmlFor="usersName" className="form-label">客人姓名</label>
-                                <input value={modalOrdersData.user.usersName || ""}  name='usersName' onChange={handleModalInputChange} type="text" className="form-control" id="usersName" placeholder='客人姓名'/>
+                                <label htmlFor="name" className="form-label">客人姓名</label>
+                                <input value={modalOrdersData.user.name || ""}  name='name' onChange={handleModalInputChange} type="text" className="form-control" id="name" placeholder='客人姓名'/>
                             </div>
 
                             <div className="mb-3">
-                                <label htmlFor="usersEmail" className="form-label">Email</label>
-                                <input value={modalOrdersData.user.usersEmail || ""} name='usersEmail' onChange={handleModalInputChange} type="text" className="form-control" id="usersEmail" placeholder='Email'/>
+                                <label htmlFor="email" className="form-label">Email</label>
+                                <input value={modalOrdersData.user.email || ""} name='email' onChange={handleModalInputChange} type="text" className="form-control" id="email" placeholder='Email'/>
                             </div>
 
                             <div className="mb-3">
@@ -192,8 +200,8 @@ const TestAdminOrderModal = ({tempOrders, isOrdersOpen, setIsOrdersOpen, setOrde
 
                             
                             <div className="mb-3">
-                                <label htmlFor="userAddress" className="form-label">客人地址</label>
-                                <input value={modalOrdersData.user.userAddress || ""} onChange={handleModalInputChange} name="userAddress" id="userAddress" className="form-control" placeholder='地址' />
+                                <label htmlFor="address" className="form-label">客人地址</label>
+                                <input value={modalOrdersData.user.address || ""} onChange={handleModalInputChange} name="address" id="address" className="form-control" placeholder='地址' />
                             </div>
 
                             <div className="mb-3 d-flex flex-column">
@@ -262,7 +270,6 @@ const TestAdminOrderModal = ({tempOrders, isOrdersOpen, setIsOrdersOpen, setOrde
                                 </table>
                             ) : (<p>目前尚未有任何產品</p>)}
 
-                            {/* 勾選客人是否已付款 */}
                             <div className="form-check">
                                 <input className="form-check-input" onChange={handleModalIsPaidChange} name='is_Paid' checked={modalOrdersData.is_paid} type="checkbox" value="" id="is_Paid" />
                                 <label htmlFor='is_Paid' className="form-check-label">已付款</label>
@@ -282,4 +289,4 @@ const TestAdminOrderModal = ({tempOrders, isOrdersOpen, setIsOrdersOpen, setOrde
   )
 }
 
-export default TestAdminOrderModal
+export default AdminOrderModal

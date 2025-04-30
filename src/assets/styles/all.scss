@@ -1,12 +1,13 @@
-@import "../../../node_modules/bootstrap/scss/functions";
+@import "bootstrap/scss/functions";
 @import "helpers/variables";
 @import "helpers/mixins";
-@import "../../../node_modules/bootstrap/scss/bootstrap";
+@import "bootstrap/scss/bootstrap";
 @import "./layout/custom";
 @import "./layout//footer";
 @import './page//LoginPage';
 @import "../styles//page/HomeStyle";
 @import "../styles//page//CartPage";
 @import "../styles//page//BlogPage";
+@import "../styles/page/checkout";
 
 @import "../styles/themes/theme";
