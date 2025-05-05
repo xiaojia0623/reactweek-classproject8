@@ -92,13 +92,13 @@ const HomePage = () => {
                 <div className="col-md-6 col-12">
                     <h1 className="home-banner-text text-center fw-bold">幸福悠閒 儉約素樸 現代優雅</h1>
                 </div>
-                <div className="col-md-6 col-12 p-md-auto p-0">
+                <div className="col-md-6 col-12 p-md-auto p-0 home-banner-img">
                     <img className=' animate__animated  ' width={'100%'} src="https://firebasestorage.googleapis.com/v0/b/react-ecommerce-contact-97bdb.appspot.com/o/ANL_7793.jpg?alt=media&token=fe05357e-033e-4d04-8c4b-ba1e3500264c" alt="" />
                 </div>
             </div>
         </div>
 
-        <div className="container">
+        <div className="container mb-0 mb-md-5">
             <h2 className='text-center fw-bold mb-5'data-aos="fade-down">創意工藝</h2>
             <Link to="/product" className='icon-link icon-link-hover align-items-center bg-none p-0 m-0 text-decoration-none  fs-5'>去看看<i className="bi bi-chevron-right ms-1 d-flex"  aria-hidden="true"></i></Link>
             <div className='row row-cols-1 row-cols-sm-2 row-cols-md-3 mt-3  '  data-aos="fade-right">
@@ -116,7 +116,7 @@ const HomePage = () => {
                     </div>
                 </div>
 
-                <div className='col'>
+                <div className='col my-3 my-md-0'>
                     <div className="card border-0 h-100">
                         <div className='overflow-hidden'>
                             <img style={{height:'375px', objectFit:'cover'}} src="https://storage.googleapis.com/vue-course-api.appspot.com/jiahu0724428/1742647306959.jpg" className="card-img-top img-hover" alt="台灣變色杯" />

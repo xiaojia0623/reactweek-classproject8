@@ -80,7 +80,7 @@ const CheckoutSuccess = () => {
 
   return (
     <>
-    <div className="container py-5 text-center" style={{height: '66.6vh'}}>
+    <div className="container text-center success-page">
       <div className='row justify-content-center mt-3 mt-md-4'>
         <div className='col-auto col-md-10'>
           <nav className='navbar'>
