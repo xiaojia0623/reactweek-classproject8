@@ -4,6 +4,16 @@
 網站分為前台與後台，前台可以逛商品、加購物車、看陶瓷文章、線上結帳；後台則能上架商品、發文、管理訂單，全都搞定！  
 設計走清爽風、加了動畫與 Toast 提醒，讓體驗不只好看也好用，還支援 RWD 自適應顯示，手機也能逛！
 
+
+[陶瓷電商網站](https://xiaojia0623.github.io/reactweek-classproject8/)
+--- 
+
+### 首頁畫面
+![網頁版首頁預覽](src/assets/web-home-page-cer.png)
+![手機版首頁預覽](src/assets/mobile-home-page-cer.png)
+
+--- 
+
 ## 功能介紹
 
 ### 前台 Front
@@ -77,21 +87,6 @@ src/
 
 ---
 
-## React + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-
----
-
 ## 快速開始
 
 ```bash
@@ -107,3 +102,20 @@ npm run build
 # 部署至 GitHub Pages
 npm run deploy
 ```
+
+---
+
+## React + Vite
+
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+
+Currently, two official plugins are available:
+
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+
+## Expanding the ESLint configuration
+
+If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+
