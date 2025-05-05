@@ -23,17 +23,29 @@
         flex-direction: column-reverse;
         position: relative;
         top: 0; left: 0;
-        img{
-            padding: 0px;
+        .home-banner-img{
+            width: 100%;
         }
         h1{
             position:absolute;
-            top: 25%; left: 10%;
+            top: 7%; left: 4%;
             color: white;
-            font-size: 22px;
+            //font-size: 22px;
         }
     }
+    
     .home-buttom-banner{
         height: 150px;
+        h3{
+            padding-top: 5%;
+        }
+    }
+}
+
+@include mobile{
+    .home-top-banner{
+        h1{
+            font-size: 18px;
+        }
     }
 }
